@@ -18,8 +18,8 @@ node(env.NODE_LABEL) {
             deleteDir()
 
             // Build RCs only on master branch
-            git url: https://github.com/KoutilyaGowtham/github.git,
-                    credentialsId: "c1-github-password-for-mobileciuser",
+            git url: env.SCM_URL,
+                credentialsId: "c1-github-password-for-mobileciuser",
                     branch: "${env.BRANCH_NAME}"
 
             def pom = readMavenPom()
