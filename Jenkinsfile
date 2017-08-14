@@ -18,7 +18,7 @@ node(env.NODE_LABEL) {
             deleteDir()
 
             // Build RCs only on master branch
-            git url: env.SCM_URL,
+            git url: https://github.com/KoutilyaGowtham/github.git,
                     credentialsId: "c1-github-password-for-mobileciuser",
                     branch: "${env.BRANCH_NAME}"
 
