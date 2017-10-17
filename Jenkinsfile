@@ -5,7 +5,7 @@ env.GH_PW="rapkotech123"
 node(env.NODE_LABEL) {
     // Need to include all the parameters used by the shell
     withEnv([
-        "BRANCH_NAME=$BRANCH_NAME",
+        "BRANCH_NAME=master",
         "SCM_URL=$SCM_URL",
         "HTTP_PROXY=$HTTP_PROXY",
         "HTTPS_PROXY=$HTTPS_PROXY",
