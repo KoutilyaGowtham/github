@@ -1,47 +1,61 @@
-#!/usr/bin/env groovy
- 
-import hudson.model.*
-import hudson.EnvVars
-import groovy.json.JsonSlurperClassic
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
-import java.net.URL
- 
-try {
-node {
-stage '\u2776 Stage 1'
-echo "\u2600 BUILD_URL=${env.BUILD_URL}"
- 
-def workspace = pwd()
-echo "\u2600 workspace=${workspace}"
- 
-stage '\u2777 Stage 2'
-} // node
-} // try end
-catch (exc) {
-/*
- err = caughtError
- currentBuild.result = "FAILURE"
- String recipient = 'infra@lists.jenkins-ci.org'
- mail subject: "${env.JOB_NAME} (${env.BUILD_NUMBER}) failed",
-         body: "It appears that ${env.BUILD_URL} is failing, somebody should do something about that",
-           to: recipient,
-      replyTo: recipient,
- from: 'noreply@ci.jenkins.io'
-*/
-} finally {
-  
- (currentBuild.result != "ABORTED") && node("master") {
-     // Send e-mail notifications for failed or unstable builds.
-     // currentBuild.result must be non-null for this step to work.
-     step([$class: 'Mailer',
-        notifyEveryUnstableBuild: true,
-        recipients: "${email_to}",
-        sendToIndividuals: true])
- }
- 
- // Must re-throw exception to propagate error:
- if (err) {
-     throw err
- }
+env.BUILD_TIMESTAMP = new java.text.SimpleDateFormat('yyyyMMddHHmmss').format(new Date())
+def credentialsId = 'github'
+env.GH_USER="KoutilyaGowtham"
+env.GH_PW="rapkotech123"
+node(env.NODE_LABEL) {
+    // Need to include all the parameters used by the shell
+    withEnv([
+        "BRANCH_NAME=$BRANCH_NAME",
+        "SCM_URL=$SCM_URL",
+        "HTTP_PROXY=$HTTP_PROXY",
+        "HTTPS_PROXY=$HTTPS_PROXY",
+        "NO_PROXY=$NO_PROXY"
+    ]) {
+        withCredentials([
+                usernamePassword(credentialsId: 'gigthubr',
+                usernameVariable: 'GH_USER', passwordVariable: 'GH_PW')
+        ]) {
+            
+            // Empty workspace
+            deleteDir()
+
+            // Build RCs only on master branch
+            git url: env.SCM_URL,
+                    credentialsId: "github",
+                    branch: "${env.BRANCH_NAME}"
+
+            def pom = readMavenPom()
+            // Note: getArtifactID and getVersion methods need to be whitelisted in Jenkins master
+            env.ANSIBLE_FORCE_COLOR = "true"
+            env.ARTIFACT_NAME = pom.getArtifactId()
+            env.ARTIFACT_VERSION = pom.getVersion()
+            //env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.replaceAll(/[-a-zA-Z]/, "")
+            env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.split("-")[0]
+            echo "INFO: Building artifact [${env.ARTIFACT_NAME}] version [${env.ARTIFACT_VERSION}]"
+
+            // Assign Maven tool from Global Tools
+            env.mvnHome = tool "Maven3.3.9"
+            env.MAVEN_OPTS = "-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dmaven.javadoc.failOnError=false"
+            echo "INFO: maven [${mvnHome}] MAVEN_OPTS [${MAVEN_OPTS}]"
+
+            wrap([$class: 'AnsiColorBuildWrapper']) {
+                sh script: '''#!/bin/bash
+                    set -ex
+                    git config --local user.email "gowtham.chowdary74@gmail.com"
+                    git config --local user.name "${GH_USER}"
+                    git tag -a rc-${BUILD_TIMESTAMP} -m 'rc from jenkins'
+                    git config --local credential.username ${GH_USER}
+                    echo "https://${GH_USER}:${GH_PW}@github.com/KoutilyaGowtham/sampleProject.git" > .git/bollocks
+                    git config credential.helper store
+                    git config --local credential.helper "store --file=.git/bollocks"
+                    git push origin rc-${BUILD_TIMESTAMP}
+                    rm .git/bollocks
+                    git config --local --remove-section credential
+                    git config --local --remove-section user
+                '''
+            }
+
+        }
+    }
+
 }
