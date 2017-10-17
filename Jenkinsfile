@@ -6,7 +6,7 @@ node(env.NODE_LABEL) {
     // Need to include all the parameters used by the shell
     withEnv([
         "BRANCH_NAME=master",
-        "SCM_URL=$SCM_URL",
+        "SCM_URL=https://github.com/KoutilyaGowtham/github.git",
         "HTTP_PROXY=$HTTP_PROXY",
         "HTTPS_PROXY=$HTTPS_PROXY",
         "NO_PROXY=$NO_PROXY"
