@@ -25,7 +25,7 @@ node(env.NODE_LABEL) {
                     credentialsId: "github",
                     branch: "${env.BRANCH_NAME}"
 
-            def pom = readMavenPom()
+            def pom = new XmlSlurper().parseText(readFile('pom.xml'))
             // Note: getArtifactID and getVersion methods need to be whitelisted in Jenkins master
             env.ANSIBLE_FORCE_COLOR = "true"
             env.ARTIFACT_NAME = "demo"
