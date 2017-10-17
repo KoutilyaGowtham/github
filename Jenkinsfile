@@ -7,12 +7,12 @@ node(env.NODE_LABEL) {
     withEnv([
         "BRANCH_NAME=master",
         "SCM_URL=https://github.com/KoutilyaGowtham/github.git",
-        "HTTP_PROXY=$HTTP_PROXY",
-        "HTTPS_PROXY=$HTTPS_PROXY",
-        "NO_PROXY=$NO_PROXY"
+        //"HTTP_PROXY=$HTTP_PROXY",
+        //"HTTPS_PROXY=$HTTPS_PROXY",
+        //"NO_PROXY=$NO_PROXY"
     ]) {
         withCredentials([
-                usernamePassword(credentialsId: 'gigthubr',
+                usernamePassword(credentialsId: 'github',
                 usernameVariable: 'GH_USER', passwordVariable: 'GH_PW')
         ]) {
             
