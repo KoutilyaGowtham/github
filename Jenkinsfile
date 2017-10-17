@@ -27,8 +27,8 @@ node(env.NODE_LABEL) {
             def pom = readMavenPom()
             // Note: getArtifactID and getVersion methods need to be whitelisted in Jenkins master
             env.ANSIBLE_FORCE_COLOR = "true"
-            env.ARTIFACT_NAME = pom.getArtifactId()
-            env.ARTIFACT_VERSION = pom.getVersion()
+            env.ARTIFACT_NAME = "demo"
+            env.ARTIFACT_VERSION = "0.0.1-SNAPSHOT"
             //env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.replaceAll(/[-a-zA-Z]/, "")
             env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.split("-")[0]
             echo "INFO: Building artifact [${env.ARTIFACT_NAME}] version [${env.ARTIFACT_VERSION}]"
