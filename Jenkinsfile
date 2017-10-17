@@ -34,7 +34,7 @@ node(env.NODE_LABEL) {
             echo "INFO: Building artifact [${env.ARTIFACT_NAME}] version [${env.ARTIFACT_VERSION}]"
 
             // Assign Maven tool from Global Tools
-            env.mvnHome = tool "Maven3.3.9"
+            env.mvnHome = tool "Maven4.0.0"
             env.MAVEN_OPTS = "-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dmaven.javadoc.failOnError=false"
             echo "INFO: maven [${mvnHome}] MAVEN_OPTS [${MAVEN_OPTS}]"
 
