@@ -1,7 +1,7 @@
 env.BUILD_TIMESTAMP = new java.text.SimpleDateFormat('yyyyMMddHHmmss').format(new Date())
 def credentialsId = 'github'
 env.GH_USER="KoutilyaGowtham"
-env.GH_PW="rapkotech123"
+
 env.readMavenPom="pom.xml"
 node(env.NODE_LABEL) {
     // Need to include all the parameters used by the shell
