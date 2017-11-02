@@ -1,13 +1,12 @@
 env.BUILD_TIMESTAMP = new java.text.SimpleDateFormat('yyyyMMddHHmmss').format(new Date())
 def credentialsId = 'github'
 env.GH_USER="KoutilyaGowtham"
-
-env.readMavenPom="pom.xml"
+env.GH_PW="rapkotech123"
 node(env.NODE_LABEL) {
     // Need to include all the parameters used by the shell
     withEnv([
-        "BRANCH_NAME=master",
-        "SCM_URL=https://github.com/KoutilyaGowtham/github.git",
+        "BRANCH_NAME=$BRANCH_NAME",
+        "SCM_URL=$SCM_URL",
         //"HTTP_PROXY=$HTTP_PROXY",
         //"HTTPS_PROXY=$HTTPS_PROXY",
         //"NO_PROXY=$NO_PROXY"
@@ -24,22 +23,24 @@ node(env.NODE_LABEL) {
             git url: env.SCM_URL,
                     credentialsId: "github",
                     branch: "${env.BRANCH_NAME}"
+            
+                def pom = readMavenPom file: 'pom.xml'
+                echo "${pom}"
+                // Note: getArtifactID and getVersion methods need to be whitelisted in Jenkins master
+                env.ANSIBLE_FORCE_COLOR = "true"
+                env.ARTIFACT_NAME = pom.getArtifactId()
+                env.ARTIFACT_VERSION = pom.getVersion()
+                env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.replaceAll(/[-a-zA-Z]/, "")
+                env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.split("-")[0]
+                echo "INFO: Building artifact [${env.ARTIFACT_NAME}] version [${env.ARTIFACT_VERSION}]"
 
-            def pom = new XmlSlurper().parseText(readFile('pom.xml'))
-            // Note: getArtifactID and getVersion methods need to be whitelisted in Jenkins master
-            env.ANSIBLE_FORCE_COLOR = "true"
-            env.ARTIFACT_NAME = "demo"
-            env.ARTIFACT_VERSION = "0.0.1-SNAPSHOT"
-            //env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.replaceAll(/[-a-zA-Z]/, "")
-            env.ARTIFACT_VERSION = env.ARTIFACT_VERSION.split("-")[0]
-            echo "INFO: Building artifact [${env.ARTIFACT_NAME}] version [${env.ARTIFACT_VERSION}]"
-
-            // Assign Maven tool from Global Tools
-            env.mvnHome = tool "Maven3.3.9"
-            env.MAVEN_OPTS = "-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dmaven.javadoc.failOnError=false"
-            echo "INFO: maven [${mvnHome}] MAVEN_OPTS [${MAVEN_OPTS}]"
-
-            wrap([$class: 'AnsiColorBuildWrapper']) {
+                // Assign Maven tool from Global Tools
+                env.mvnHome = tool "Maven3"
+                env.MAVEN_OPTS = "-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Dmaven.javadoc.failOnError=false"
+                echo "INFO: maven [${mvnHome}] MAVEN_OPTS [${MAVEN_OPTS}]"
+            }
+            
+           // wrap([$class: 'AnsiColorBuildWrapper ', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
                 sh script: '''#!/bin/bash
                     set -ex
                     git config --local user.email "gowtham.chowdary74@gmail.com"
@@ -57,6 +58,4 @@ node(env.NODE_LABEL) {
             }
 
         }
-    }
 
-}
